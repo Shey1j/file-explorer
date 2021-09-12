@@ -4,7 +4,7 @@
     <h5>My Files</h5>
       </div>
       <div v-else>
-          <h5>My Files <p v-for="(item, index) in header" :key="index"><img src="../assets/right.png" alt="right arrow" /> {{ item }}</p></h5>
+          <h5>My Files <p v-for="(item) in header" :key="item.id"><img src="../assets/right.png" alt="right arrow" /> {{ item.name }}</p></h5>
       </div>
   </div>
 </template>
