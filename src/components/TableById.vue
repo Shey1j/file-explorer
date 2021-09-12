@@ -13,7 +13,11 @@
         </div>
       </div>
       <div class="explorer-table-buttons-section">
-        <button class="add-file" v-if="!showSubInput" @click="toggleSubInput('File')">
+        <button
+          class="add-file"
+          v-if="!showSubInput"
+          @click="toggleSubInput('File')"
+        >
           Add New File
         </button>
         <button class="add-file" v-else @click="subFileInputChange">
@@ -103,12 +107,12 @@ import DeleteModal from "./DeleteModal.vue";
 
 export default {
   components: { RenameModal, DeleteModal },
-  props: ["header", "fileId"],
+  props: { header: String, fileId: Number, parentData: Array },
   data() {
     return {
       subHeader: "",
       showSubInput: false,
-      subFileData: [],
+      subFileData: this.parentData[this.fileId].subFile ? this.parentData[this.fileId].subFile : [],
       subFileName: "",
       subFileImage: "",
       showRenameModal: false,
@@ -127,36 +131,39 @@ export default {
     },
 
     subFileInputChange(e) {
+      const val = e.target.value;
       const date = new Date();
       this.time = date.toLocaleTimeString("en-US");
-      this.subFileName = e.target.value;
-      if (this.subHeader === "Folder") {
-        this.subFileData.unshift({
-          id: this.subFileData.length - this.subFileData.length,
-          parentId: this.fileId,
-          fileName: this.subFileName,
-          fileType: this.subHeader,
-          time: this.time,
-          timeChanged: this.time,
-        });
-      } else {
-        this.subFileData.push({
-          id: this.subFileData.length - 1,
-          parentId: this.fileId,
-          fileName: this.subFileName,
-          fileType: this.subHeader,
-          time: this.time,
-          timeChanged: this.time,
-        });
+      this.subFileName = val;
+      if (val.length > 0) {
+        if (this.subHeader === "Folder") {
+          this.subFileData.unshift({
+            id: this.subFileData.length - this.subFileData.length,
+            parentId: this.fileId,
+            fileName: this.subFileName,
+            fileType: this.subHeader,
+            time: this.time,
+            timeChanged: this.time,
+          });
+        } else {
+          this.subFileData.push({
+            id: this.subFileData.length - 1,
+            parentId: this.fileId,
+            fileName: this.subFileName,
+            fileType: this.subHeader,
+            time: this.time,
+            timeChanged: this.time,
+          });
+        }
+        this.subFileName = "";
+        this.toggleSubInput();
       }
-      this.subFileName = "";
-      this.toggleSubInput();
     },
 
     toggleRenameModal(value, id) {
-        this.renameHeader = value;
-        this.renameFileIndex = id;
-        this.showRenameModal = !this.showRenameModal;
+      this.renameHeader = value;
+      this.renameFileIndex = id;
+      this.showRenameModal = !this.showRenameModal;
     },
 
     renameSubFile(value) {
@@ -171,21 +178,21 @@ export default {
     toggleDeleteModal(value, id) {
       this.deleteHeader = value;
       this.deleteFileIndex = id;
-        this.showDeleteModal = !this.showDeleteModal;
+      this.showDeleteModal = !this.showDeleteModal;
     },
 
     deleteSubFile(value) {
-        for (let i = 0; i < this.subFileData.length; i++) {
-            if (value === i) {
-                this.subFileData.splice(i, 1);
-            }
+      for (let i = 0; i < this.subFileData.length; i++) {
+        if (value === i) {
+          this.subFileData.splice(i, 1);
         }
+      }
     },
 
     goBack() {
-        this.$emit("subFile", this.subFileData);
-        this.$emit("back");
-    }
+      this.$emit("subFile", this.subFileData);
+      this.$emit("back");
+    },
   },
 };
 </script>
@@ -197,6 +204,6 @@ export default {
 }
 
 .go-back-link {
-    border: none;
+  border: none;
 }
 </style>
