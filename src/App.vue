@@ -1,19 +1,16 @@
 <template>
   <Header />
-  <SubHeader />
   <Table />
 </template>
 
 <script>
 import Header from "./components/Header.vue";
-import SubHeader from "./components/SubHeader.vue";
 import Table from "./components/Table.vue";
 
 export default {
   name: "App",
   components: {
     Header,
-    SubHeader,
     Table,
   },
 };

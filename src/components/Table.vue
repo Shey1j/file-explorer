@@ -1,92 +1,117 @@
 <template>
-  <div class="explorer-table-container">
-    <div class="explorer-table-form">
-      <div>
-        <div v-show="showInput">
-          <input
-            type="text"
-            placeholder="Enter name"
-            :value="fileName"
-            @change="fileInputChange"
-          />
+  <SubHeader :header="tableByIdHeader" />
+  <div v-if="!showTableById">
+    <div class="explorer-table-container">
+      <div class="explorer-table-form">
+        <div>
+          <div v-show="showInput">
+            <input
+              type="text"
+              placeholder="Enter name"
+              :value="fileName"
+              @change="fileInputChange"
+            />
+          </div>
+        </div>
+        <div class="explorer-table-buttons-section">
+          <button
+            class="add-file"
+            v-if="!showInput"
+            @click="toggleInput('File')"
+          >
+            Add New File
+          </button>
+          <button class="add-file" v-else @click="fileInputChange">
+            Add New File
+          </button>
+          <button
+            class="add-folder"
+            v-if="!showInput"
+            @click="toggleInput('Folder')"
+          >
+            Add New Folder
+          </button>
+          <button class="add-folder" v-else @click="fileInputChange">
+            Add New Folder
+          </button>
         </div>
       </div>
-      <div class="explorer-table-buttons-section">
-        <button class="add-file" v-if="!showInput" @click="toggleInput('File')">
-          Add New File
-        </button>
-        <button class="add-file" v-else @click="fileInputChange">
-          Add New File
-        </button>
-        <button
-          class="add-folder"
-          v-if="!showInput"
-          @click="toggleInput('Folder')"
-        >
-          Add New Folder
-        </button>
-        <button class="add-folder" v-else @click="fileInputChange">
-          Add New Folder
-        </button>
+      <div class="explorer-table">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Time Added</th>
+              <th>Time Modified</th>
+              <th />
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(data, index) in dataFile"
+              :key="index"
+              @click="handleShowTableById(index, data.fileType, data.fileName)"
+              :style="[data.fileType === 'Folder' ? 'cursor: pointer' : null]"
+            >
+              <td>{{ index + 1 }}</td>
+              <td>
+                <div class="table-data">
+                  <img
+                    v-if="data.fileType === 'Folder'"
+                    src="../assets/folder.png"
+                    :alt="data.fileType"
+                  /><img v-else src="../assets/file.png" :alt="data.fileType" />
+                  {{ data.fileName }}
+                </div>
+              </td>
+              <td>{{ data.time }}</td>
+              <td>{{ data.timeChanged }}</td>
+              <td>
+                <button
+                  class="rename-button"
+                  @click="(e) => toggleRenameModal(data.fileType, index)"
+                >
+                  Rename
+                </button>
+              </td>
+              <td>
+                <button
+                  class="delete-button"
+                  @click="(e) => toggleDeleteModal(data.fileType, index)"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
-    <div class="explorer-table">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Time Added</th>
-            <th>Time Modified</th>
-            <th />
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(data, index) in dataFile" :key="index">
-            <td>{{ index + 1 }}</td>
-            <td>
-              <div class="table-data">
-                <img
-                  v-if="data.fileType === 'Folder'"
-                  src="../assets/folder.png"
-                  :alt="data.fileType"
-                /><img v-else src="../assets/file.png" :alt="data.fileType" />
-                {{ data.fileName }}
-              </div>
-            </td>
-            <td>{{ data.time }}</td>
-            <td>{{ data.timeChanged }}</td>
-            <td>
-              <button
-                class="rename-button"
-                @click="(e) => toggleRenameModal(data.fileType, index)"
-              >
-                Rename
-              </button>
-            </td>
-            <td>
-              <button class="delete-button" @click="(e) => toggleDeleteModal(data.fileType, index)">Delete</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div v-if="showRenameModal">
+      <RenameModal
+        :header="renameHeader"
+        :fileId="renameFileIndex"
+        @newName="renameFile"
+        @close="toggleRenameModal"
+      />
+    </div>
+    <div v-if="showDeleteModal">
+      <DeleteModal
+        :header="deleteHeader"
+        :fileId="deleteFileIndex"
+        @closeDelete="toggleDeleteModal"
+        @fileDelete="deleteFile"
+      />
     </div>
   </div>
-  <div v-if="showRenameModal">
-    <RenameModal
-      :header="renameHeader"
-      :fileId="renameFileIndex"
-      @newName="renameFile"
-      @close="toggleRenameModal"
-    />
-  </div>
-    <div v-if="showDeleteModal">
-    <DeleteModal
-      :header="deleteHeader"
-      :fileId="deleteFileIndex"
-      @closeDelete="toggleDeleteModal"
-      @fileDelete="deleteFile"
+  <div v-else>
+    <TableById
+      :fileId="tableByIdIndex"
+      :header="tableByIdHeader"
+      @subFile="handleAddSubProperty"
+      @back="handleGoBack"
     />
   </div>
 </template>
@@ -94,9 +119,11 @@
 <script>
 import RenameModal from "./RenameModal.vue";
 import DeleteModal from "./DeleteModal.vue";
+import TableById from "./TableById.vue";
+import SubHeader from "./SubHeader.vue";
 
 export default {
-  components: { RenameModal, DeleteModal },
+  components: { RenameModal, DeleteModal, TableById, SubHeader },
   data() {
     return {
       header: "",
@@ -111,6 +138,9 @@ export default {
       deleteHeader: "",
       renameFileIndex: 0,
       deleteFileIndex: 0,
+      tableByIdHeader: "",
+      tableByIdIndex: 0,
+      showTableById: false,
     };
   },
   methods: {
@@ -129,7 +159,7 @@ export default {
           fileName: this.fileName,
           fileType: this.header,
           time: this.time,
-          timeChanged: this.time
+          timeChanged: this.time,
         });
       } else {
         this.dataFile.push({
@@ -137,7 +167,7 @@ export default {
           fileName: this.fileName,
           fileType: this.header,
           time: this.time,
-          timeChanged: this.time
+          timeChanged: this.time,
         });
       }
       this.fileName = "";
@@ -161,21 +191,44 @@ export default {
     toggleDeleteModal(value, id) {
       this.deleteHeader = value;
       this.deleteFileIndex = id;
-        this.showDeleteModal = !this.showDeleteModal;
+      this.showDeleteModal = !this.showDeleteModal;
     },
 
     deleteFile(value) {
-        for (let i = 0; i < this.dataFile.length; i++) {
-            if (value === i) {
-                this.dataFile.splice(i, 1);
-            }
+      for (let i = 0; i < this.dataFile.length; i++) {
+        if (value === i) {
+          this.dataFile.splice(i, 1);
         }
-    }
+      }
+    },
+    handleShowTableById(index, type, name) {
+      if (type === "Folder") {
+        this.tableByIdIndex = index;
+        this.tableByIdHeader = name;
+        this.showTableById = true;
+      } else {
+        this.showTableById = false;
+      }
+    },
+
+    handleAddSubProperty(value) {
+      for (let i = 0; i < this.dataFile.length; i++) {
+        for (let j = 0; j < value.length; j++) {
+          if (i === value[j].parentId) {
+            this.dataFile[i].subFile = value;
+          }
+        }
+      }
+    },
+    handleGoBack() {
+      this.showTableById = false;
+      this.tableByIdHeader = "";
+    },
   },
 };
 </script>
 
-<style scoped>
+<style>
 .explorer-table-container {
   margin: 0 auto;
   width: 60%;
@@ -186,6 +239,11 @@ export default {
   display: flex;
   padding: 1.25rem;
   justify-content: space-between;
+}
+
+.explorer-table-control-section {
+  display: flex;
+  column-gap: 12px;
 }
 
 .explorer-table-buttons-section {
@@ -204,7 +262,7 @@ button {
 
 .add-file {
   background: transparent;
-  border: 1px solid #0E4F8E;
+  border: 1px solid #0e4f8e;
 }
 
 .add-file:hover {
@@ -212,12 +270,12 @@ button {
 }
 
 .add-folder {
-  background: #0E4F8E;
+  background: #0e4f8e;
   border: none;
   color: #fff;
 }
 
-input {
+.explorer-table-form input {
   width: 12rem;
   height: 2.5rem;
   padding-left: 1rem;
@@ -242,7 +300,7 @@ th {
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
   text-align: left;
-  background-color: #077BAB;
+  background-color: #077bab;
   color: white;
 }
 
@@ -261,13 +319,13 @@ td {
 }
 
 .rename-button {
-  background: #E59E45;
+  background: #e59e45;
   border: none;
   color: #fff;
 }
 
 .delete-button {
-  background: #EF3751;
+  background: #ef3751;
   border: none;
   color: #fff;
 }
