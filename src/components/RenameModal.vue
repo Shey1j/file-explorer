@@ -46,7 +46,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .rename-modal-backdrop {
   top: 0;
   position: fixed;
