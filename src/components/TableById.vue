@@ -103,12 +103,12 @@ import DeleteModal from "./DeleteModal.vue";
 
 export default {
   components: { RenameModal, DeleteModal },
-  props: ["header", "fileId"],
+  props: {"header": String, "fileId": Number, "parentData": Array},
   data() {
     return {
       subHeader: "",
       showSubInput: false,
-      subFileData: [],
+      subFileData: this.parentData[this.fileId].subFile,
       subFileName: "",
       subFileImage: "",
       showRenameModal: false,
