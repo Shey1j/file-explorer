@@ -1,46 +1,28 @@
 <template>
   <SubHeader :header="tableByIdHeader" />
-  <div v-if="!showTableById">
+  <div>
     <div class="explorer-table-container">
       <div class="explorer-table-form">
-        <div>
-          <div v-show="showInput">
-            <input
-              type="text"
-              placeholder="Enter name"
-              :value="fileName"
-              @change="fileInputChange"
-            />
+        <div class="explorer-table-control-section">
+          <div v-show="showTableById">
+            <button class="go-back-link" @click="handleGoBack">Go Back</button>
           </div>
         </div>
         <div class="explorer-table-buttons-section">
-          <button
-            class="add-file"
-            v-if="!showInput"
-            @click="toggleInput('File')"
-          >
+          <button class="add-file" @click="(e) => toggleAddModal('File')">
             Add New File
           </button>
-          <button class="add-file" v-else @click="fileInputChange">
-            Add New File
-          </button>
-          <button
-            class="add-folder"
-            v-if="!showInput"
-            @click="toggleInput('Folder')"
-          >
-            Add New Folder
-          </button>
-          <button class="add-folder" v-else @click="fileInputChange">
+          <button class="add-folder" @click="(e) => toggleAddModal('Folder')">
             Add New Folder
           </button>
         </div>
       </div>
+
       <div class="explorer-table">
         <table>
           <thead>
             <tr>
-              <th>ID</th>
+              <th>S/N</th>
               <th>Name</th>
               <th>Time Added</th>
               <th>Time Modified</th>
@@ -50,10 +32,13 @@
           </thead>
           <tbody>
             <tr
-              v-for="(data, index) in dataFile"
+              v-for="(data, index) in filteredDataFile"
               :key="index"
-              @click="handleShowTableById(index, data.fileType, data.fileName)"
               :style="[data.fileType === 'Folder' ? 'cursor: pointer' : null]"
+              @click="
+                (e) =>
+                  handleShowTableById(e, data.id, data.fileType, data.fileName)
+              "
             >
               <td>{{ index + 1 }}</td>
               <td>
@@ -71,7 +56,8 @@
               <td>
                 <button
                   class="rename-button"
-                  @click="(e) => toggleRenameModal(data.fileType, index)"
+                  @click.stop="handleShowTableById"
+                  @click="(e) => toggleRenameModal(data.fileType, data.id)"
                 >
                   Rename
                 </button>
@@ -79,7 +65,8 @@
               <td>
                 <button
                   class="delete-button"
-                  @click="(e) => toggleDeleteModal(data.fileType, index)"
+                  @click.stop="handleShowTableById"
+                  @click="(e) => toggleDeleteModal(data.fileType, data.id)"
                 >
                   Delete
                 </button>
@@ -105,86 +92,81 @@
         @fileDelete="deleteFile"
       />
     </div>
-  </div>
-  <div v-else>
-    <TableById
-      :fileId="tableByIdIndex"
-      :header="tableByIdHeader"
-      @subFile="handleAddSubProperty"
-      @back="handleGoBack"
-      :parentData="dataFile"
-    />
+    <div v-if="showAddModal">
+      <AddModal
+        :header="addHeader"
+        :fileId="addFileIndex"
+        :pathList="tableByIdHeader"
+        :parentData="dataFile"
+        @newFile="addFile"
+        @closeAddModal="toggleAddModal"
+      />
+    </div>
   </div>
 </template>
 
 <script>
 import RenameModal from "./RenameModal.vue";
 import DeleteModal from "./DeleteModal.vue";
-import TableById from "./TableById.vue";
+import AddModal from "./AddFileOrFolder.vue";
 import SubHeader from "./SubHeader.vue";
 
 export default {
-  components: { RenameModal, DeleteModal, TableById, SubHeader },
+  components: { RenameModal, DeleteModal, AddModal, SubHeader },
   data() {
     return {
       header: "",
-      showInput: false,
       dataFile: [],
-      mockDataFile: this.dataFile,
+      filteredDataFile: [],
       fileName: "",
       fileImage: "",
       newFileName: "",
+      showAddModal: false,
       showRenameModal: false,
       showDeleteModal: false,
+      addHeader: "",
       renameHeader: "",
       deleteHeader: "",
+      addFileIndex: 0,
       renameFileIndex: 0,
       deleteFileIndex: 0,
       tableByIdHeader: [],
-      tableByIdIndex: 0,
       showTableById: false,
     };
   },
   methods: {
-    toggleInput(value) {
-      this.header = value;
-      this.showInput = !this.showInput;
-    },
-
-    fileInputChange(e) {
-      const val = e.target.value;
-      const date = new Date();
-      this.time = date.toLocaleTimeString("en-US");
-      this.fileName = val;
-      if (val.length > 0) {
-        if (this.header === "Folder") {
-          this.dataFile.unshift({
-            id: this.dataFile.length - this.dataFile.length,
-            fileName: this.fileName,
-            fileType: this.header,
-            time: this.time,
-            timeChanged: this.time,
-          });
-        } else {
-          this.dataFile.push({
-            id: this.dataFile.length - 1,
-            fileName: this.fileName,
-            fileType: this.header,
-            time: this.time,
-            timeChanged: this.time,
-          });
+    addFile(value) {
+      for (let i = 0; i < value.length; i++) {
+        this.dataFile.push(value[i]);
+      }
+      if (this.tableByIdHeader.length > 0) {
+        const filteredItems = this.dataFile.filter(
+          (item) =>
+            item.parentId ===
+            this.tableByIdHeader[this.tableByIdHeader.length - 1].id
+        );
+        for (let i = 0; i < filteredItems.length; i++) {
+          this.filteredDataFile.push(filteredItems[i]);
+          this.filteredDataFile = [...new Set(this.filteredDataFile)];
         }
-        this.fileName = "";
-        this.toggleInput();
+      } else {
+        for (let i = 0; i < this.dataFile.length; i++) {
+          {
+            this.filteredDataFile.push(this.dataFile[i]);
+            this.filteredDataFile = [...new Set(this.filteredDataFile)];
+          }
+        }
       }
     },
-
     renameFile(value) {
       for (let i = 0; i < this.dataFile.length; i++) {
-        if (value.index === i) {
+        if (value.index === this.dataFile[i].id) {
           this.dataFile[i].fileName = value.newName;
           this.dataFile[i].timeChanged = value.time;
         }
+      }
+      if (this.tableByIdHeader.length > 0) {
+        this.showTableById = true;
       }
     },
     toggleRenameModal(value, id) {
@@ -199,35 +181,67 @@ export default {
       this.showDeleteModal = !this.showDeleteModal;
     },
 
-    deleteFile(value) {
-      for (let i = 0; i < this.dataFile.length; i++) {
-        if (value === i) {
-          this.dataFile.splice(i, 1);
+    toggleAddModal(value) {
+      this.addHeader = value;
+      this.showAddModal = !this.showAddModal;
+    },
+
+    deleteFromFilteredFile(value) {
+      for (let item = 0; item < this.filteredDataFile.length; item++) {
+        if (value === this.filteredDataFile[item].id) {
+          this.filteredDataFile.splice(item, 1);
         }
       }
     },
-    handleShowTableById(index, type, name) {
+
+    deleteFile(value) {
+      for (let i = 0; i < this.dataFile.length; i++) {
+        if (value === this.dataFile[i].id) {
+          for (let j = 0; j < this.dataFile.length; j++) {
+            if (value === this.dataFile[j].parentId) {
+              this.dataFile.splice(j, 1);
+            }
+          }
+          this.dataFile.splice(i, 1);
+        }
+        this.deleteFromFilteredFile(value);
+      }
+      if (this.tableByIdHeader.length > 0) {
+        this.showTableById = true;
+      }
+    },
+    handleShowTableById(e, index, type, name) {
+      e.preventDefault();
       if (type === "Folder") {
+        const data = {
+          name: name,
+          id: index,
+        };
         this.tableByIdIndex = index;
-        this.tableByIdHeader.push(name);
+        this.tableByIdHeader.push(data);
+        this.filteredDataFile = this.dataFile.filter(
+          (item) => item.parentId === index
+        );
         this.showTableById = true;
       } else {
         this.showTableById = false;
       }
     },
 
-    handleAddSubProperty(value) {
-      for (let i = 0; i < this.dataFile.length; i++) {
-        for (let j = 0; j < value.length; j++) {
-          if (i === value[j].parentId) {
-            this.dataFile[i].subFile = value;
-          }
-        }
-      }
-    },
     handleGoBack() {
-      this.showTableById = false;
       this.tableByIdHeader.pop();
+      if (this.tableByIdHeader.length > 0) {
+        this.filteredDataFile = this.dataFile.filter(
+          (item) =>
+            item.parentId ===
+            this.tableByIdHeader[this.tableByIdHeader.length - 1].id
+        );
+      } else {
+        this.filteredDataFile = this.dataFile.filter(
+          (item) => item.parentId === null
+        );
+        this.showTableById = false;
+      }
     },
   },
 };
@@ -246,10 +260,23 @@ export default {
   justify-content: space-between;
 }
 
+.explorer-table-control-section {
+  display: flex;
+  column-gap: 12px;
+  column-gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.go-back-link {
+  border: none;
+}
+
 .explorer-table-buttons-section {
   display: flex;
   justify-content: flex-end;
   column-gap: 0.75rem;
+  margin: 1rem 0;
 }
 
 button {
