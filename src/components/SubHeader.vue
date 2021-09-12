@@ -4,14 +4,14 @@
     <h5>My Files</h5>
       </div>
       <div v-else>
-          {{ header }}
+          <h5>My Files <p v-for="(item, index) in header" :key="index"><img src="../assets/right.png" alt="right arrow" /> {{ item }}</p></h5>
       </div>
   </div>
 </template>
 
 <script>
 export default {
-    props: ['header'],
+    props: {'header': Array},
 }
 </script>
 
@@ -26,5 +26,12 @@ h5 {
     font-family: "Karla", sans-serif;
     font-weight: 400;
     font-size: 1.25rem;
+    display: flex;
+    column-gap: 1rem;
+    align-items: center;
+}
+
+img {
+    height: 1rem;
 }
 </style>

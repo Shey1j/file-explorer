@@ -130,6 +130,7 @@ export default {
       header: "",
       showInput: false,
       dataFile: [],
+      mockDataFile: this.dataFile,
       fileName: "",
       fileImage: "",
       newFileName: "",
@@ -139,7 +140,7 @@ export default {
       deleteHeader: "",
       renameFileIndex: 0,
       deleteFileIndex: 0,
-      tableByIdHeader: "",
+      tableByIdHeader: [],
       tableByIdIndex: 0,
       showTableById: false,
     };
@@ -208,7 +209,7 @@ export default {
     handleShowTableById(index, type, name) {
       if (type === "Folder") {
         this.tableByIdIndex = index;
-        this.tableByIdHeader = name;
+        this.tableByIdHeader.push(name);
         this.showTableById = true;
       } else {
         this.showTableById = false;
@@ -226,7 +227,7 @@ export default {
     },
     handleGoBack() {
       this.showTableById = false;
-      this.tableByIdHeader = "";
+      this.tableByIdHeader.pop();
     },
   },
 };
