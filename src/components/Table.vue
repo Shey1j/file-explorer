@@ -112,6 +112,7 @@
       :header="tableByIdHeader"
       @subFile="handleAddSubProperty"
       @back="handleGoBack"
+      :parentData="dataFile"
     />
   </div>
 </template>
