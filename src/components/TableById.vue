@@ -83,7 +83,7 @@
     <RenameModal
       :header="renameHeader"
       :fileId="renameFileIndex"
-      @newName="renameFile"
+      @newName="renameSubFile"
       @close="toggleRenameModal"
     />
   </div>
@@ -92,7 +92,7 @@
       :header="deleteHeader"
       :fileId="deleteFileIndex"
       @closeDelete="toggleDeleteModal"
-      @fileDelete="deleteFile"
+      @fileDelete="deleteSubFile"
     />
   </div>
 </template>
@@ -174,7 +174,7 @@ export default {
         this.showDeleteModal = !this.showDeleteModal;
     },
 
-    deleteFile(value) {
+    deleteSubFile(value) {
         for (let i = 0; i < this.subFileData.length; i++) {
             if (value === i) {
                 this.subFileData.splice(i, 1);

@@ -3,7 +3,7 @@
     <div class="delete-modal">
       <h3>Are you sure you want to delete this {{ header }}?</h3>
         <div class="modal-buttons-section">
-          <button class="delete-button" @click="handleFileDelete">
+          <button class="delete-modal-button" @click="handleFileDelete">
             Delete
           </button>
           <button class="close-button" @click="handleModalClose">Cancel</button>
@@ -68,7 +68,7 @@ export default {
   background: #000;
 }
 
-.delete-button {
+.delete-modal-button {
   background: #0E4F8E;
 }
 
