@@ -135,6 +135,15 @@ export default {
     };
   },
   methods: {
+    handleArraySort(item1, item2) {
+      if (item2.fileType > item1.fileType) {
+        return 1;
+      }
+      if (item2.fileType < item1.fileType) {
+        return -1;
+      }
+      return 0;
+    },
     addFile(value) {
       for (let i = 0; i < value.length; i++) {
         this.dataFile.push(value[i]);
@@ -148,12 +157,14 @@ export default {
         for (let i = 0; i < filteredItems.length; i++) {
           this.filteredDataFile.push(filteredItems[i]);
           this.filteredDataFile = [...new Set(this.filteredDataFile)];
+          this.filteredDataFile.sort(this.handleArraySort);
         }
       } else {
         for (let i = 0; i < this.dataFile.length; i++) {
           {
             this.filteredDataFile.push(this.dataFile[i]);
             this.filteredDataFile = [...new Set(this.filteredDataFile)];
+            this.filteredDataFile.sort(this.handleArraySort);
           }
         }
       }
@@ -222,6 +233,7 @@ export default {
         this.filteredDataFile = this.dataFile.filter(
           (item) => item.parentId === index
         );
+        this.filteredDataFile.sort(this.handleArraySort);
         this.showTableById = true;
       } else {
         this.showTableById = false;
@@ -236,10 +248,12 @@ export default {
             item.parentId ===
             this.tableByIdHeader[this.tableByIdHeader.length - 1].id
         );
+        this.filteredDataFile.sort(this.handleArraySort);
       } else {
         this.filteredDataFile = this.dataFile.filter(
           (item) => item.parentId === null
         );
+        this.filteredDataFile.sort(this.handleArraySort);
         this.showTableById = false;
       }
     },
