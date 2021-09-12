@@ -241,11 +241,6 @@ export default {
   justify-content: space-between;
 }
 
-.explorer-table-control-section {
-  display: flex;
-  column-gap: 12px;
-}
-
 .explorer-table-buttons-section {
   display: flex;
   justify-content: flex-end;
