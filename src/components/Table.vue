@@ -151,28 +151,31 @@ export default {
     },
 
     fileInputChange(e) {
+      const val = e.target.value;
       const date = new Date();
       this.time = date.toLocaleTimeString("en-US");
-      this.fileName = e.target.value;
-      if (this.header === "Folder") {
-        this.dataFile.unshift({
-          id: this.dataFile.length - this.dataFile.length,
-          fileName: this.fileName,
-          fileType: this.header,
-          time: this.time,
-          timeChanged: this.time,
-        });
-      } else {
-        this.dataFile.push({
-          id: this.dataFile.length - 1,
-          fileName: this.fileName,
-          fileType: this.header,
-          time: this.time,
-          timeChanged: this.time,
-        });
+      this.fileName = val;
+      if (val.length > 0) {
+        if (this.header === "Folder") {
+          this.dataFile.unshift({
+            id: this.dataFile.length - this.dataFile.length,
+            fileName: this.fileName,
+            fileType: this.header,
+            time: this.time,
+            timeChanged: this.time,
+          });
+        } else {
+          this.dataFile.push({
+            id: this.dataFile.length - 1,
+            fileName: this.fileName,
+            fileType: this.header,
+            time: this.time,
+            timeChanged: this.time,
+          });
+        }
+        this.fileName = "";
+        this.toggleInput();
       }
-      this.fileName = "";
-      this.toggleInput();
     },
 
     renameFile(value) {
