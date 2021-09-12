@@ -189,3 +189,14 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.explorer-table-control-section {
+  display: flex;
+  column-gap: 12px;
+}
+
+.go-back-link {
+    border: none;
+}
+</style>
