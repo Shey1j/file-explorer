@@ -236,7 +236,11 @@ export default {
         this.filteredDataFile.sort(this.handleArraySort);
         this.showTableById = true;
       } else {
-        this.showTableById = false;
+        if (this.tableByIdHeader.length > 0) {
+          this.showTableById = true;
+        } else {
+          this.showTableById = false;
+        }
       }
     },
 
